@@ -1,32 +1,113 @@
-import javax.sql.rowset.FilteredRowSet;
+package Parser;
+
 import java.io.*;
 import java.util.*;
-import java.util.regex.*;
 
-public class Parser {
-    public static void main(String[] args) {
-        Table table = new Table();
-        table.readGrammar();
-        table.mapGrammar();
-        table.genFIRST();
-        table.genFOLLOW();
-        System.out.println(table.tableMap);
-        System.out.println(table.FIRST);
-        System.out.println(table.FOLLOW);
+public class ParserModel {
+    public Grammar grammar;
+    public Predictor predictor;
+
+    public ParserModel() {
+        grammar = new Grammar();
+//        grammar.readGrammar();
+//        grammar.mapGrammar();
+//        grammar.genFIRST();
+//        grammar.genFOLLOW();
+//        grammar.genTable();
+
+        predictor = new Predictor(grammar);
     }
 }
 
-class Table {
+
+class Predictor {
+    Grammar grammar;
+    Stack<String> tokenStack = new Stack<>();
+    ArrayList<String> inputTokenString = new ArrayList<>();
+
+    public Predictor(Grammar grammar) {
+        this.grammar = grammar;
+    }
+
+    public void readTokenString(String inputString) {
+        String[] tempArray;
+        tempArray = inputString.split(" ");
+        inputTokenString = new ArrayList<>(Arrays.asList(tempArray));
+        inputTokenString.add("#");
+    }
+
+    public ArrayList<ArrayList<String>> run(String inputString) {
+        // read the string into ArrayList
+        readTokenString(inputString);
+        // initial the stack
+        ArrayList<ArrayList<String>> rst = new ArrayList<>();
+        tokenStack.push("#");
+        tokenStack.push(grammar.startCh);
+        int tokenPoint = 0;
+        String X, a;
+        // loop for analysis
+        while (true) {
+            // allocate the entry of one result
+            ArrayList<String> rstEntry = new ArrayList<>();
+            // the candidate if using candidate
+            ArrayList<String> candidate = new ArrayList<>();
+            X = tokenStack.pop();
+            a = inputTokenString.get(tokenPoint);
+            if (grammar.isTerminal(X)) {
+                if (X.equals(a)) {
+                    tokenPoint++;
+                }
+                else {
+                    error();
+                    break;
+                }
+            }
+            else if (X.equals("#")) {
+                if (X.equals(a)) {
+                    break;
+                }
+                else {
+                    error();
+                }
+            }
+            else if (grammar.analysisTable.get(X).containsKey(a)) {
+                candidate = grammar.analysisTable.get(X).get(a);
+                if (!candidate.contains("epsilon")) {
+                    for (int i = candidate.size() - 1; i >= 0; i--) {
+                        tokenStack.push(candidate.get(i));
+                    }
+                }
+            }
+            else {
+                error();
+            }
+            rstEntry.add(utils.listToString(tokenStack));
+            rstEntry.add(utils.listToString(inputTokenString.subList(tokenPoint, inputTokenString.size())));
+            rstEntry.add(utils.listToString(candidate));
+            rst.add(rstEntry);
+        }
+        return rst;
+    }
+
+    public void error() {
+        System.out.println("ERROR");
+    }
+}
+
+
+class Grammar {
+    ArrayList<String> rawGrammar;
     HashMap<String, ArrayList<ArrayList<String>>> tableMap = new HashMap<>();
     HashMap<String, ArrayList<String>> FIRST = new HashMap<>();
     HashMap<String, ArrayList<String>> FOLLOW = new HashMap<>();
+    HashMap<String, HashMap<String, ArrayList<String>>> analysisTable = new HashMap<>();
     String startCh = "";
 
-    public ArrayList<String> readGrammar() {
+    public void readGrammar() {
         String line = "";
-        ArrayList<String> grammar = new ArrayList<>();
+        rawGrammar = new ArrayList<>();
         try {
-            String fileName = "/Users/chen/Documents/curriculum/Compiler/Parser/src/Grammar";
+            String fileName = "src/Parser/Grammar";
             File file = new File(fileName);
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             BufferedReader buffer = new BufferedReader(reader);
@@ -34,24 +115,26 @@ class Table {
             line = buffer.readLine();
             while (line != null) {
                 // add all line into the grammar list
-                grammar.add(line);
+                rawGrammar.add(line);
                 line = buffer.readLine();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return grammar;
+    }
+
+    public void readGrammar(String s) {
+        rawGrammar = new ArrayList<>(Arrays.asList(s.split("\n")));
     }
 
     public void mapGrammar() {
-        ArrayList<String> grammer = readGrammar();
         String[] rightLeft;
         String[] candidates;
         String[] charArray;
         ArrayList<ArrayList<String>> rightList;
-        for(int i=0; i<grammer.size(); i++) {
+        for(int i=0; i<rawGrammar.size(); i++) {
             // split right and left by "->"
-            rightLeft = grammer.get(i).split("->");
+            rightLeft = rawGrammar.get(i).split("->");
             // trim the space
             String left = rightLeft[0].trim();
             String right = rightLeft[1];
@@ -123,6 +206,10 @@ class Table {
 
     public boolean isNonTerminal(String ch) {
         return !ch.equals("epsilon") && Character.isUpperCase(ch.charAt(0));
+    }
+
+    public boolean isTerminal(String ch) {
+        return !ch.equals("epsilon") && !ch.equals("#") && !isNonTerminal(ch);
     }
 
     public ArrayList<String> genTokenStrFIRST(ArrayList<String> tokenStr) {
@@ -249,5 +336,30 @@ class Table {
             }
         }
         return true;
+    }
+
+    public void genTable() {
+        Set<String> keySet = tableMap.keySet();
+        Iterator<String> iterator = keySet.iterator();
+        while (iterator.hasNext()) {
+            String curr = iterator.next();
+            // allocate the mem for each nonterminal
+            analysisTable.put(curr, new HashMap<>());
+            for (ArrayList<String> candidateFormula : tableMap.get(curr)) {
+                ArrayList<String> candFIRST = genTokenStrFIRST(candidateFormula);
+                // step 2
+                for (String ch : candFIRST) {
+                    if (isTerminal(ch)) {
+                        analysisTable.get(curr).put(ch, candidateFormula);
+                    }
+                }
+                // step 3
+                if (candFIRST.contains("epsilon")) {
+                    for (String ch : FOLLOW.get(curr)) {
+                        analysisTable.get(curr).put(ch, candidateFormula);
+                    }
+                }
+            }
+        }
     }
 }

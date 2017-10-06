@@ -43,12 +43,18 @@ class Predictor {
         ArrayList<ArrayList<String>> rst = new ArrayList<>();
         tokenStack.push("#");
         tokenStack.push(grammar.startCh);
+        // initial the rst
+        ArrayList<String> rstEntry = new ArrayList<>();
+        rstEntry.add(utils.listToString(tokenStack));
+        rstEntry.add(utils.listToString(inputTokenString));
+        rstEntry.add(" ");
+        rst.add(rstEntry);
         int tokenPoint = 0;
         String X, a;
         // loop for analysis
         while (true) {
             // allocate the entry of one result
-            ArrayList<String> rstEntry = new ArrayList<>();
+            rstEntry = new ArrayList<>();
             // the candidate if using candidate
             ArrayList<String> candidate = new ArrayList<>();
             X = tokenStack.pop();

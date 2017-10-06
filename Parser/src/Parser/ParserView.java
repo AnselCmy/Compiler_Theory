@@ -19,6 +19,7 @@ public class ParserView extends JFrame {
         InputPanel inputPanel = new InputPanel();
         OutputPanel outputPanel = new OutputPanel();
         JButton confirmBtn = new JButton("Confirm");
+        confirmBtn.setPreferredSize(new Dimension(150, 50));
         // add action listener
         confirmBtn.addActionListener(actionEvent -> {
             // clear the panel
@@ -30,6 +31,7 @@ public class ParserView extends JFrame {
         });
         // declare bottoms
         JButton showFIRSTBtn = new JButton("FIRST");
+        showFIRSTBtn.setPreferredSize(new Dimension(150, 50));
         showFIRSTBtn.addActionListener(actionEvent -> {
             // clear the panel
             outputPanel.clear();
@@ -40,6 +42,7 @@ public class ParserView extends JFrame {
             outputPanel.showF(FIRST, "FIRST");
         });
         JButton showFOLLOWBtn = new JButton("FOLLOW");
+        showFOLLOWBtn.setPreferredSize(new Dimension(150, 50));
         showFOLLOWBtn.addActionListener(actionEvent -> {
             // clear the panel
             outputPanel.clear();
@@ -50,6 +53,7 @@ public class ParserView extends JFrame {
             outputPanel.showF(FOLLOW, "FOLLOW");
         });
         JButton showAnalysisTableBtn = new JButton("Analysis Table");
+        showAnalysisTableBtn.setPreferredSize(new Dimension(150, 50));
         showAnalysisTableBtn.addActionListener(actionEvent -> {
             // clear the panel
             outputPanel.clear();
@@ -59,18 +63,28 @@ public class ParserView extends JFrame {
             // show FIRST
             outputPanel.showTable(analysisTabel);
         });
+        // panel all btn
+        JPanel btnPanel = new JPanel();
+        btnPanel.setLayout(new FlowLayout());
+        btnPanel.add(showFIRSTBtn);
+        btnPanel.add(showFOLLOWBtn);
+        btnPanel.add(showAnalysisTableBtn);
+        btnPanel.add(inputPanel);
+        btnPanel.add(confirmBtn);
         // layout
-        setLayout(new FlowLayout());
-//        setLayout(new BorderLayout());
-        setBounds(300, 300, 500, 500);
+//        setLayout(new FlowLayout());
+        setLayout(new BorderLayout());
+        setSize(1000, 650);
+//        setBounds(300, 300, 1000, 1000);
         // add element to frame
-        getContentPane().add(grammarPanel);
-        getContentPane().add(showFIRSTBtn);
-        getContentPane().add(showFOLLOWBtn);
-        getContentPane().add(showAnalysisTableBtn);
-        getContentPane().add(inputPanel);
-        getContentPane().add(confirmBtn);
-        getContentPane().add(outputPanel);
+        getContentPane().add(grammarPanel, BorderLayout.NORTH);
+//        getContentPane().add(showFIRSTBtn);
+//        getContentPane().add(showFOLLOWBtn);
+//        getContentPane().add(showAnalysisTableBtn);
+//        getContentPane().add(inputPanel, BorderLayout.CENTER);
+//        getContentPane().add(confirmBtn);
+        getContentPane().add(btnPanel, BorderLayout.CENTER);
+        getContentPane().add(outputPanel, BorderLayout.SOUTH);
         // basic setting
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
@@ -85,7 +99,9 @@ class GrammarPanel extends JPanel {
                             "E' -> + T E' | epsilon\n" +
                             "T  -> F T'\n" +
                             "T' -> * F T' | epsilon\n" +
-                            "F  -> ( E ) | i", 10, 40);
+                            "F  -> ( E ) | i", 10, 80);
+        Font font = this.getFont();
+        setFont(new Font(font.getName(), font.getStyle(), 50));
         add(textArea);
     }
 }
@@ -94,7 +110,11 @@ class InputPanel extends JPanel {
     JTextField textField;
 
     public InputPanel() {
-        textField = new JTextField(20);
+        textField = new JTextField(50);
+        // set size
+        textField.setPreferredSize(new Dimension(160, 50));
+        Font font = this.getFont();
+        this.setFont(new Font(font.getName(), font.getStyle(), 100));
         add(textField);
     }
 }
@@ -107,7 +127,18 @@ class OutputPanel extends JPanel {
     public OutputPanel() {
         model = new DefaultTableModel();
         table = new JTable(model);
+        table.setGridColor(Color.BLACK);
+        table.setRowHeight(30);
+        table.setShowGrid(true);
+        // set font
+        Font font = this.getFont();
+        table.getTableHeader().setFont(new Font(font.getName(), font.getStyle(), 20));
+        table.setFont(new Font(font.getName(), font.getStyle(), 20));
+        // set size
+        table.setPreferredScrollableViewportSize(new Dimension(960, 300));
         scrollPane = new JScrollPane(table);
+//        scrollPane.setLayout(new FlowLayout());
+//        scrollPane.setSize(800, 500);
         add(scrollPane);
     }
 

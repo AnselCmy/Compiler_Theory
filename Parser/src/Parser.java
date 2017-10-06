@@ -26,7 +26,7 @@ class Table {
         String line = "";
         ArrayList<String> grammar = new ArrayList<>();
         try {
-            String fileName = "/Users/chen/Documents/curriculum/Compiler/Parser/src/Grammar";
+            String fileName = System.getProperty("user.dir") + "/src/Grammar";
             File file = new File(fileName);
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             BufferedReader buffer = new BufferedReader(reader);

@@ -30,7 +30,7 @@ class LexerScanner {
 
     void initBuffer() {
         try {
-            String fileName = "/Users/chen/Documents/curriculum/Compiler/Lexer/src/test.c";
+            String fileName =  System.getProperty("user.dir") + "/src/test.c";
             File file = new File(fileName);
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             buffer = new BufferedReader(reader);

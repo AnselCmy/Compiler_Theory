@@ -1,12 +1,19 @@
+package Lexer;
+
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
+
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Lexer {
     public static void main(String[] args) {
-        LexerScanner lexerScanner = new LexerScanner();
+        LexerScanner lexerScanner = new LexerScanner("if i=0 then n++;\n" +
+                "a <= 3b %);");
         lexerScanner.scan();
+//        System.out.println(lexerScanner.outputList);
     }
 }
 
@@ -22,15 +29,26 @@ class LexerScanner {
     ArrayList<String> keyWord = new ArrayList<>(Arrays.asList("do", "end", "for", "if", "printf", "scanf", "then", "while"));
     ArrayList<String> identifier = new ArrayList<>();
     ArrayList<String> constant = new ArrayList<>();
+    // string point
+    int sp = 0;
+    // program
+    String program = "";
+    // record the out put table
+    ArrayList<ArrayList<String>> outputList = new ArrayList<>();
 
     LexerScanner() {
         initBuffer();
         start = getChar();
     }
 
+    LexerScanner(String s) {
+        program = s;
+        start = getChar();
+    }
+
     void initBuffer() {
         try {
-            String fileName =  System.getProperty("user.dir") + "/src/test.c";
+            String fileName =  System.getProperty("user.dir") + "/src/Lexer/test.c";
             File file = new File(fileName);
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             buffer = new BufferedReader(reader);
@@ -40,13 +58,21 @@ class LexerScanner {
     }
 
     char getChar() {
-        int tempChar = -1;
+//        int tempChar = -1;
+//        try {
+//            tempChar = buffer.read();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return (char)tempChar;
+        char c;
         try {
-            tempChar = buffer.read();
+            c = program.charAt(sp);
+            sp++;
         } catch (Exception e) {
-            e.printStackTrace();
+            c = (char)-1;
         }
-        return (char)tempChar;
+        return c;
     }
 
     void scan() {
@@ -61,6 +87,11 @@ class LexerScanner {
                 // get the digit string and shift c to start;
                 string = scanType(c, "Digit");
                 c = start;
+                // check if has letter in digit
+                if (hasLetter(string)) {
+                    throwError(string, pos);
+                    continue;
+                }
                 // check constant table and print
                 if (!constant.contains(string)) {
                     constant.add(string);
@@ -117,31 +148,6 @@ class LexerScanner {
                     throwError(string, pos);
                 }
             }
-//            else if (isSymbol(c)) {
-//                pos[1]++;
-////                string = scanType(c, "Symbol");
-////                c = start;
-//                string = " ";
-//                if (isDelimiter(String.valueOf(c))) {
-//                    string = scanType(c, "Delimiter");
-//                    c = start;
-//                    formatOut(string, 2, pos);
-//                }
-//                else if (isArithmetic(String.valueOf(c))) {
-//                    string = scanType(c, "Arithmetic");
-//                    c = start;
-//                    formatOut(string, 3, pos);
-//                }
-//                else if (isRelational(String.valueOf(c))) {
-//                    string = scanType(c, "Relational");
-//                    c = start;
-//                    formatOut(string, 4, pos);
-//                }
-//                else {
-//                    throwError(string, pos);
-//                    c = getChar();
-//                }
-//            }
             // new line
             else if (c == '\n') {
                 pos[0]++;
@@ -166,7 +172,7 @@ class LexerScanner {
         char c = getChar();
         // get char till not this type
         while (c != (char)-1) {
-            if (type.equals("Digit") && !Character.isDigit(c)) {
+            if (type.equals("Digit") && (!Character.isDigit(c) && !Character.isLetter(c))) {
                 break;
             }
             else if (type.equals("Letter") && !Character.isLetter(c)) {
@@ -213,11 +219,13 @@ class LexerScanner {
 
     void throwError(String word, int[] pos){
         System.out.printf("%s\t%s\t%s\t(%d, %d)\n", word, "ERROR", "ERROR", pos[0], pos[1]);
+        outputList.add(new ArrayList<>(Arrays.asList(word, "ERROR", "ERROR", "("+String.valueOf(pos[0])+", "+String.valueOf(pos[1])+")")));
     }
 
     void formatOut(String word, int type, int[] pos) {
         String typeName = getTypeName(type);
         System.out.printf("%s\t(%d, %s)\t%s\t(%d, %d)\n", word, type, word, typeName, pos[0], pos[1]);
+        outputList.add(new ArrayList<>(Arrays.asList(word, "("+type+", "+word+")", typeName, "("+String.valueOf(pos[0])+", "+String.valueOf(pos[1])+")")));
     }
 
     String getTypeName(int type) {
@@ -243,5 +251,11 @@ class LexerScanner {
                 break;
         }
         return typeName;
+    }
+
+    boolean hasLetter(String s) {
+        String regex = ".*[a-zA-Z]+.*";
+        Matcher m = Pattern.compile(regex).matcher(s);
+        return m.matches();
     }
 }

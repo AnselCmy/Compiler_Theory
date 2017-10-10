@@ -206,6 +206,7 @@ class Grammar {
                     }
                 }
             }
+            utils.cleanRepeat(FIRST.get(curr));
             return FIRST.get(curr);
         }
     }

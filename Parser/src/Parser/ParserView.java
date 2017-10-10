@@ -1,9 +1,6 @@
 package Parser;
 
-import com.sun.xml.internal.messaging.saaj.soap.ver1_1.BodyElement1_1Impl;
-
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicSliderUI;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.*;
@@ -59,7 +56,7 @@ public class ParserView extends JFrame {
             outputPanel.clear();
             // put the text into grammar parser and gen FIRST
             String grammarStr = grammarPanel.textArea.getText();
-            HashMap<String, HashMap<String, ArrayList<String>>> analysisTabel = controller.getAnalysisTabel(grammarStr);
+            HashMap<String, HashMap<String, ArrayList<String>>> analysisTabel = controller.getAnalysisTable(grammarStr);
             // show FIRST
             outputPanel.showTable(analysisTabel);
         });
@@ -99,9 +96,9 @@ class GrammarPanel extends JPanel {
                             "E' -> + T E' | epsilon\n" +
                             "T  -> F T'\n" +
                             "T' -> * F T' | epsilon\n" +
-                            "F  -> ( E ) | i", 10, 80);
-        Font font = this.getFont();
-        setFont(new Font(font.getName(), font.getStyle(), 50));
+                            "F  -> ( E ) | i", 10, 70);
+        Font font = textArea.getFont();
+        textArea.setFont(new Font(font.getName(), font.getStyle(), 15));
         add(textArea);
     }
 }
@@ -110,11 +107,11 @@ class InputPanel extends JPanel {
     JTextField textField;
 
     public InputPanel() {
-        textField = new JTextField(50);
+        textField = new JTextField("i * i + i", 50);
         // set size
-        textField.setPreferredSize(new Dimension(160, 50));
-        Font font = this.getFont();
-        this.setFont(new Font(font.getName(), font.getStyle(), 100));
+        textField.setPreferredSize(new Dimension(100, 50));
+        Font font = textField.getFont();
+        textField.setFont(new Font(font.getName(), font.getStyle(), 15));
         add(textField);
     }
 }
@@ -143,7 +140,7 @@ class OutputPanel extends JPanel {
     }
 
     public void displayRst(ArrayList<ArrayList<String>> rst) {
-        for (String col : new String[]{"Step", "Analysis Stack", "Rest Input", "Production"}) {
+        for (String col : new String[]{"Step", "Analysis Stack", "Left Input", "Production"}) {
             model.addColumn(col);
         }
         for(int i=0; i<rst.size(); i++) {

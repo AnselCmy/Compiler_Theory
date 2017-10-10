@@ -33,7 +33,7 @@ public class ParserController {
         return model.grammar.FOLLOW;
     }
 
-    public HashMap<String, HashMap<String, ArrayList<String>>> getAnalysisTabel(String grammarStr) {
+    public HashMap<String, HashMap<String, ArrayList<String>>> getAnalysisTable(String grammarStr) {
         model = new ParserModel();
         model.grammar.readGrammar(grammarStr);
         model.grammar.mapGrammar();

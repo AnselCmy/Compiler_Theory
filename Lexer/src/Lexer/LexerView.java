@@ -34,13 +34,13 @@ public class LexerView {
             String inputString = inputText.getText();
             lexerScanner = new LexerScanner(inputString);
             lexerScanner.scan();
-            setTable(lexerScanner.identifier);
+            setTable(lexerScanner.identifier, "identifier");
         });
         constantTableBtn.addActionListener(e -> {
             String inputString = inputText.getText();
             lexerScanner = new LexerScanner(inputString);
             lexerScanner.scan();
-            setTable(lexerScanner.constant);
+            setTable(lexerScanner.constant, "constant");
         });
         // set table
         outputTable.setShowGrid(true);
@@ -69,9 +69,9 @@ public class LexerView {
         outputTable.setModel(model);
     }
 
-    public void setTable(ArrayList<String> list) {
+    public void setTable(ArrayList<String> list, String type) {
         DefaultTableModel model = new DefaultTableModel();
-        for (String col : new String[]{"num", "identifier"}) {
+        for (String col : new String[]{"num", type}) {
             model.addColumn(col);
         }
         for (int i=0; i<list.size(); i++) {

@@ -15,6 +15,7 @@ public class ParserView extends JFrame {
         GrammarPanel grammarPanel = new GrammarPanel();
         InputPanel inputPanel = new InputPanel();
         OutputPanel outputPanel = new OutputPanel();
+        FIRSTPanel firstPanel = new FIRSTPanel();
         JButton confirmBtn = new JButton("Confirm");
         confirmBtn.setPreferredSize(new Dimension(150, 50));
         // add action listener
@@ -23,20 +24,23 @@ public class ParserView extends JFrame {
             outputPanel.clear();
             // get the input and send to controller
             String inputString = inputPanel.textField.getText();
-            ArrayList<ArrayList<String>> traceStack = controller.getTraceStack(inputString);
+            String grammarStr = grammarPanel.textArea.getText();
+            ArrayList<ArrayList<String>> traceStack = controller.getTraceStack(grammarStr, inputString);
             outputPanel.displayRst(traceStack);
         });
         // declare bottoms
         JButton showFIRSTBtn = new JButton("FIRST");
         showFIRSTBtn.setPreferredSize(new Dimension(150, 50));
         showFIRSTBtn.addActionListener(actionEvent -> {
-            // clear the panel
+//            // clear the panel
             outputPanel.clear();
+//            firstPanel.clear();
             // put the text into grammar parser and gen FIRST
             String grammarStr = grammarPanel.textArea.getText();
             HashMap<String, ArrayList<String>> FIRST = controller.getFIRST(grammarStr);
             // show FIRST
             outputPanel.showF(FIRST, "FIRST");
+//            firstPanel.showFIRST(FIRST);
         });
         JButton showFOLLOWBtn = new JButton("FOLLOW");
         showFOLLOWBtn.setPreferredSize(new Dimension(150, 50));
@@ -82,6 +86,7 @@ public class ParserView extends JFrame {
 //        getContentPane().add(confirmBtn);
         getContentPane().add(btnPanel, BorderLayout.CENTER);
         getContentPane().add(outputPanel, BorderLayout.SOUTH);
+//        getContentPane().add(firstPanel, BorderLayout.SOUTH);
         // basic setting
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
@@ -92,11 +97,11 @@ class GrammarPanel extends JPanel {
     JTextArea textArea;
 
     public GrammarPanel() {
-        textArea = new JTextArea("E  -> T E'\n" +
-                            "E' -> + T E' | epsilon\n" +
-                            "T  -> F T'\n" +
-                            "T' -> * F T' | epsilon\n" +
-                            "F  -> ( E ) | i", 10, 70);
+        textArea = new JTextArea("E->TH\n" +
+                            "H->+TH|$\n" +
+                            "T->FI\n" +
+                            "I->*FI|$\n" +
+                            "F->(E)|i", 10, 70);
         Font font = textArea.getFont();
         textArea.setFont(new Font(font.getName(), font.getStyle(), 15));
         add(textArea);
@@ -107,12 +112,46 @@ class InputPanel extends JPanel {
     JTextField textField;
 
     public InputPanel() {
-        textField = new JTextField("i * i + i", 50);
+        textField = new JTextField("i*i+i", 50);
         // set size
         textField.setPreferredSize(new Dimension(100, 50));
         Font font = textField.getFont();
         textField.setFont(new Font(font.getName(), font.getStyle(), 15));
         add(textField);
+    }
+}
+
+class FIRSTPanel extends JPanel {
+    JScrollPane scrollPane;
+    JTable table;
+    DefaultTableModel model;
+
+    public FIRSTPanel() {
+        model = new DefaultTableModel();
+        table = new JTable(model);
+        table.setGridColor(Color.BLACK);
+        table.setRowHeight(30);
+        table.setShowGrid(true);
+        table.setPreferredScrollableViewportSize(new Dimension(960, 300));
+        scrollPane = new JScrollPane(table);
+        add(scrollPane);
+    }
+
+    public void showFIRST(HashMap<String, ArrayList<String>> F) {
+        for (String col : new String[]{"Nonterminal", "FIRST"}) {
+            model.addColumn(col);
+        }
+        Set<String> keySet = F.keySet();
+        Iterator<String> iterator = keySet.iterator();
+        while (iterator.hasNext()) {
+            String curr = iterator.next();
+            model.addRow(new Object[]{curr, utils.listToString(F.get(curr))});
+        }
+    }
+
+    public void clear() {
+        model = new DefaultTableModel();
+        table.setModel(model);
     }
 }
 
@@ -163,7 +202,8 @@ class OutputPanel extends JPanel {
     }
 
     public void showTable(HashMap<String, HashMap<String, ArrayList<String>>> analysisTabel) {
-        // find nonterminal and terminal as head of table
+        // find nonterminal and terminal as h
+        // \ead of table
         ArrayList<String> terminal = new ArrayList<>();
         ArrayList<String> nonterminal = new ArrayList<>();
         Set<String> keySet = analysisTabel.keySet();

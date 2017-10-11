@@ -81,7 +81,7 @@ class LexerScanner {
         String string;
         while (c != (char)-1) {
             // digit
-            if (Character.isDigit(c)) {
+            if (Character.isDigit(c) || String.valueOf(c).equals("-")) {
                 // add the position
                 pos[1]++;
                 // get the digit string and shift c to start;
@@ -172,7 +172,8 @@ class LexerScanner {
         char c = getChar();
         // get char till not this type
         while (c != (char)-1) {
-            if (type.equals("Digit") && (!Character.isDigit(c) && !Character.isLetter(c))) {
+            if (type.equals("Digit") && (!Character.isDigit(c) && !Character.isLetter(c) &&
+                    !String.valueOf(c).equals(".") && !String.valueOf(c).equals("-"))) {
                 break;
             }
             else if (type.equals("Letter") && !Character.isLetter(c)) {
@@ -232,22 +233,22 @@ class LexerScanner {
         String typeName = "ERROR";
         switch (type) {
             case 1:
-                typeName = "Key_Word";
+                typeName = "关键词";
                 break;
             case 2:
-                typeName = "Delimiter";
+                typeName = "分界词";
                 break;
             case 3:
-                typeName = "Arithmetic_Operator";
+                typeName = "算数运算符";
                 break;
             case 4:
-                typeName = "Relational_Operator";
+                typeName = "关系运算符";
                 break;
             case 5:
-                typeName = "Constant";
+                typeName = "常量";
                 break;
             case 6:
-                typeName = "Identifier";
+                typeName = "标识符";
                 break;
         }
         return typeName;

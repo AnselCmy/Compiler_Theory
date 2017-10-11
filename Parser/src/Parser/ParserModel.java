@@ -17,6 +17,21 @@ public class ParserModel {
 
         predictor = new Predictor(grammar);
     }
+
+    public static void main(String[] args) {
+        ParserModel model = new ParserModel();
+        model.grammar.readGrammar("E->TH\n" +
+                "H->+TH|e\n" +
+                "T->FI\n" +
+                "I->*FI|e\n" +
+                "F->(E)|i");
+        model.grammar.mapGrammar();
+        model.grammar.genFIRST();
+        model.grammar.genFOLLOW();
+        model.grammar.genTable();
+        model.predictor.run("i*i+i");
+
+    }
 }
 
 
@@ -24,15 +39,17 @@ class Predictor {
     Grammar grammar;
     Stack<String> tokenStack = new Stack<>();
     ArrayList<String> inputTokenString = new ArrayList<>();
+    String epsilon = "$";
 
     public Predictor(Grammar grammar) {
         this.grammar = grammar;
     }
 
     public void readTokenString(String inputString) {
-        String[] tempArray;
-        tempArray = inputString.split(" ");
-        inputTokenString = new ArrayList<>(Arrays.asList(tempArray));
+        inputTokenString = new ArrayList<>();
+        for(int i=0; i<inputString.length(); i++) {
+            inputTokenString.add(String.valueOf(inputString.charAt(i)));
+        }
         inputTokenString.add("#");
     }
 
@@ -78,7 +95,7 @@ class Predictor {
             }
             else if (grammar.analysisTable.get(X).containsKey(a)) {
                 candidate = grammar.analysisTable.get(X).get(a);
-                if (!candidate.contains("epsilon")) {
+                if (!candidate.contains(epsilon)) {
                     for (int i = candidate.size() - 1; i >= 0; i--) {
                         tokenStack.push(candidate.get(i));
                     }
@@ -89,9 +106,16 @@ class Predictor {
             }
             rstEntry.add(utils.listToString(tokenStack));
             rstEntry.add(utils.listToString(inputTokenString.subList(tokenPoint, inputTokenString.size())));
-            rstEntry.add(utils.listToString(candidate));
+            if (candidate.size()==0)
+                rstEntry.add("");
+            else
+                rstEntry.add(X+"->"+utils.listToString(candidate));
             rst.add(rstEntry);
         }
+//        System.out.println("result here:");
+//        System.out.println(inputString);
+//        System.out.println(rst);
+//        System.out.println("result end");
         return rst;
     }
 
@@ -108,6 +132,7 @@ class Grammar {
     HashMap<String, ArrayList<String>> FOLLOW = new HashMap<>();
     HashMap<String, HashMap<String, ArrayList<String>>> analysisTable = new HashMap<>();
     String startCh = "";
+    public String epsilon = "$";
 
     public void readGrammar() {
         String line = "";
@@ -148,9 +173,16 @@ class Grammar {
             candidates = right.split("\\|");
             rightList = new ArrayList<>();
             // split every candidate into char and add into map
+//            for (String candidate : candidates) {
+//                charArray = candidate.trim().split(" ");
+//                rightList.add(new ArrayList<>(Arrays.asList(charArray)));
+//            }
             for (String candidate : candidates) {
-                charArray = candidate.trim().split(" ");
-                rightList.add(new ArrayList<>(Arrays.asList(charArray)));
+                ArrayList<String> temp = new ArrayList<>();
+                for (int j=0; j<candidate.length(); j++) {
+                    temp.add(String.valueOf(candidate.charAt(j)));
+                }
+                rightList.add(temp);
             }
             tableMap.put(left, rightList);
             // get the start character
@@ -158,6 +190,7 @@ class Grammar {
                 startCh = left;
             }
         }
+//        System.out.println(tableMap);
     }
 
     public void genFIRST() {
@@ -184,13 +217,13 @@ class Grammar {
                     if (isNonTerminal(currCand)) {
                         ArrayList<String> currCandFIRST = genFIRSTof(currCand);
                         // has the epsilon, find for next character
-                        if (currCandFIRST.contains("epsilon")) {
+                        if (currCandFIRST.contains(epsilon)) {
                             ArrayList<String> temp = new ArrayList<>(currCandFIRST);
-                            temp.remove("epsilon");
+                            temp.remove(epsilon);
                             FIRST.get(curr).addAll(temp);
                             // means that all the candidate has epsilon as FIRST
                             if (i == candidateFormula.size()-1) {
-                                FIRST.get(curr).add("epsilon");
+                                FIRST.get(curr).add(epsilon);
                             }
                         }
                         // if has no epsilon, break the for loop
@@ -212,11 +245,11 @@ class Grammar {
     }
 
     public boolean isNonTerminal(String ch) {
-        return !ch.equals("epsilon") && Character.isUpperCase(ch.charAt(0));
+        return !ch.equals(epsilon) && Character.isUpperCase(ch.charAt(0));
     }
 
     public boolean isTerminal(String ch) {
-        return !ch.equals("epsilon") && !ch.equals("#") && !isNonTerminal(ch);
+        return !ch.equals(epsilon) && !ch.equals("#") && !isNonTerminal(ch);
     }
 
     public ArrayList<String> genTokenStrFIRST(ArrayList<String> tokenStr) {
@@ -225,13 +258,13 @@ class Grammar {
             String token = tokenStr.get(i);
             if (isNonTerminal(token)) {
                 ArrayList<String> currCandFIRST = genFIRSTof(token);
-                if (currCandFIRST.contains("epsilon")) {
+                if (currCandFIRST.contains(epsilon)) {
                     ArrayList<String> temp = new ArrayList<>(currCandFIRST);
-                    temp.remove("epsilon");
+                    temp.remove(epsilon);
                     tokenStrFIRST.addAll(temp);
                     // means that all the candidate has epsilon as FIRST
                     if (i == tokenStr.size()-1) {
-                        tokenStrFIRST.add("epsilon");
+                        tokenStrFIRST.add(epsilon);
                     }
                 }
                 // if has no epsilon, break the for loop
@@ -269,7 +302,7 @@ class Grammar {
                         // get the FIRST of last token string FIRST
                         List<String> last = candidateFormula.subList(t+1, candidateFormula.size());
                         ArrayList<String>lastFIRST = genTokenStrFIRST(new ArrayList<>(last));
-                        lastFIRST.remove("epsilon");
+                        lastFIRST.remove(epsilon);
                         FOLLOW.get(token).addAll(lastFIRST);
                     }
                 }
@@ -293,7 +326,7 @@ class Grammar {
                             else {
                                 List<String> last = candidateFormula.subList(t+1, candidateFormula.size());
                                 ArrayList<String>lastFIRST = genTokenStrFIRST(new ArrayList<>(last));
-                                if (lastFIRST.contains("epsilon")) {
+                                if (lastFIRST.contains(epsilon)) {
                                     FOLLOW.get(token).addAll(FOLLOW.get(curr));
                                 }
                             }
@@ -361,7 +394,7 @@ class Grammar {
                     }
                 }
                 // step 3
-                if (candFIRST.contains("epsilon")) {
+                if (candFIRST.contains(epsilon)) {
                     for (String ch : FOLLOW.get(curr)) {
                         analysisTable.get(curr).put(ch, candidateFormula);
                     }

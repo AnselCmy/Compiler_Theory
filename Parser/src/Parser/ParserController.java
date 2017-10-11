@@ -6,13 +6,15 @@ import java.util.HashMap;
 public class ParserController {
     ParserModel model;
 
-    public ArrayList<ArrayList<String>> getTraceStack(String inputString) {
+    public ArrayList<ArrayList<String>> getTraceStack(String grammarStr, String inputString) {
         model = new ParserModel();
-        model.grammar.readGrammar();
+        model.grammar.readGrammar(grammarStr);
         model.grammar.mapGrammar();
         model.grammar.genFIRST();
         model.grammar.genFOLLOW();
         model.grammar.genTable();
+//        System.out.println(model.grammar.analysisTable);
+//        System.out.println(model.predictor.run(inputString));
         return model.predictor.run(inputString);
     }
 

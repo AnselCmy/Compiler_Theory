@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>LR</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.bootcss.com/angular.js/1.6.5/angular.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+	<div ng-app="lr_app" ng-controller="lr_controller">
+		{a test a}
+		{a test_type a}
+		<div ng-repeat="index in test">
+			<p>{a index a}</p>
+		</div>
+	<div></div>
+</body>
+
+<script>
+    var app = angular.module("lr_app", []);
+    app.config(['$interpolateProvider', function($interpolateProvider) {
+		$interpolateProvider.startSymbol('{a');
+		$interpolateProvider.endSymbol('a}');
+	}]);
+    app.controller("lr_controller", function($scope){
+        $scope.test = {{ test }};
+        $scope.test_type = typeof $scope.test
+    });
+</script>
+
+</body>
+</html>

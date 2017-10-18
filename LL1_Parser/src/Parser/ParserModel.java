@@ -172,11 +172,6 @@ class Grammar {
             // split different candidate
             candidates = right.split("\\|");
             rightList = new ArrayList<>();
-            // split every candidate into char and add into map
-//            for (String candidate : candidates) {
-//                charArray = candidate.trim().split(" ");
-//                rightList.add(new ArrayList<>(Arrays.asList(charArray)));
-//            }
             for (String candidate : candidates) {
                 ArrayList<String> temp = new ArrayList<>();
                 for (int j=0; j<candidate.length(); j++) {
@@ -204,35 +199,37 @@ class Grammar {
     }
 
     public ArrayList<String> genFIRSTof(String curr) {
+        // 如果已经产生了这个符号的FIRST集，我们就直接返回
         if (FIRST.containsKey(curr)) {
             return FIRST.get(curr);
         }
         else {
-            // allocate a new ArrayList to this nonterminal
             FIRST.put(curr, new ArrayList<>());
-            // dealing with each candidate of this nonterminal by for loop
+            // 遍历某一个文法符号的所有产生式
             for (ArrayList<String> candidateFormula : tableMap.get(curr)) {
+                // 遍历某一个产生式的所有符号
                 for (int i=0; i<candidateFormula.size(); i++) {
                     String currCand = candidateFormula.get(i);
+                    // 如果现在处理的符号的非终结符
                     if (isNonTerminal(currCand)) {
                         ArrayList<String> currCandFIRST = genFIRSTof(currCand);
-                        // has the epsilon, find for next character
+                        // 如果现在处理的符号的FIRST集包含了epsilon
                         if (currCandFIRST.contains(epsilon)) {
                             ArrayList<String> temp = new ArrayList<>(currCandFIRST);
                             temp.remove(epsilon);
                             FIRST.get(curr).addAll(temp);
-                            // means that all the candidate has epsilon as FIRST
+                            // 如果现在已经处理到了一个产生式的末尾，则加入epsilon
                             if (i == candidateFormula.size()-1) {
                                 FIRST.get(curr).add(epsilon);
                             }
                         }
-                        // if has no epsilon, break the for loop
+                        // 如果没有epsilon了，就不用向下看产生式的其他符号了
                         else {
                             FIRST.get(curr).addAll(currCandFIRST);
                             break;
                         }
                     }
-                    // if is nonterminal or epsilon, just put into FIRST and break for loop
+                    // 如果是终结符或者epsilon，则直接放到FIRST集里面
                     else {
                         FIRST.get(curr).add(currCand);
                         break;
@@ -282,7 +279,7 @@ class Grammar {
     }
 
     public void genFOLLOW() {
-        // step 1
+        // step1，遍历所有的非终结符，分配内存空间给FOLLOW集
         for (Map.Entry entry : tableMap.entrySet()) {
             String key = (String)entry.getKey();
             FOLLOW.put(key, new ArrayList<>());
@@ -290,16 +287,18 @@ class Grammar {
                 FOLLOW.get(startCh).add("#");
             }
         }
-        // step 2
+        // step2，遍历所有的文法
         Set<String> keySet = tableMap.keySet();
         Iterator<String> iterator = keySet.iterator();
         while (iterator.hasNext()) {
             String curr = iterator.next();
+            // 遍历每一条文法的产生式
             for (ArrayList<String> candidateFormula : tableMap.get(curr)) {
+                // 遍历每一条产生式的每一个文法符号
                 for (int t=0; t<candidateFormula.size(); t++) {
                     String token = candidateFormula.get(t);
                     if (isNonTerminal(token)) {
-                        // get the FIRST of last token string FIRST
+                        // 如果这个文法符号是非终结符
                         List<String> last = candidateFormula.subList(t+1, candidateFormula.size());
                         ArrayList<String>lastFIRST = genTokenStrFIRST(new ArrayList<>(last));
                         lastFIRST.remove(epsilon);
@@ -308,24 +307,29 @@ class Grammar {
                 }
             }
         }
-        // step 3
+        // step3，while直到所有的FOLLOW都稳定不变
         while (true) {
+            // 先复制一下旧的FOLLOW集合，最后来判断是否稳定
             HashMap<String, ArrayList<String>> oldFOLLOW = cloneOldFOLLOW();
             iterator = keySet.iterator();
             while (iterator.hasNext()) {
                 String curr = iterator.next();
+                // 遍历每一个产生式
                 for (ArrayList<String> candidateFormula : tableMap.get(curr)) {
+                    // 遍历产生式的每一个符号
                     for (int t=0; t<candidateFormula.size(); t++) {
                         String token = candidateFormula.get(t);
+                        // 如果是非终结符
                         if (isNonTerminal(token)) {
-                            // this nonterminal is the last in this candidate formula
+                            // 如果这个非终结符是最后一个
                             if (t == candidateFormula.size()-1) {
                                 FOLLOW.get(token).addAll(FOLLOW.get(curr));
                             }
-                            // not the last but the last token string FIRST has epsilon
+                            // 如果不是最后一个
                             else {
                                 List<String> last = candidateFormula.subList(t+1, candidateFormula.size());
                                 ArrayList<String>lastFIRST = genTokenStrFIRST(new ArrayList<>(last));
+                                // 该非终结符后面的串的FIRST集包含epsilon
                                 if (lastFIRST.contains(epsilon)) {
                                     FOLLOW.get(token).addAll(FOLLOW.get(curr));
                                 }
@@ -335,7 +339,7 @@ class Grammar {
                 }
             }
             cleanRepeatInFOLLOW();
-            // do while the FOLLOW is stable
+            // 直到FOLLOW集合稳定不变
             if(stableFOLLOW(oldFOLLOW)) {
                 break;
             }
@@ -383,17 +387,18 @@ class Grammar {
         Iterator<String> iterator = keySet.iterator();
         while (iterator.hasNext()) {
             String curr = iterator.next();
-            // allocate the mem for each nonterminal
+            // 给预测分析表分配空间
             analysisTable.put(curr, new HashMap<>());
+            // 遍历每一个产生式
             for (ArrayList<String> candidateFormula : tableMap.get(curr)) {
                 ArrayList<String> candFIRST = genTokenStrFIRST(candidateFormula);
-                // step 2
+                // step2，对于每一个属于这个产生时的FIRST集的终结符
                 for (String ch : candFIRST) {
                     if (isTerminal(ch)) {
                         analysisTable.get(curr).put(ch, candidateFormula);
                     }
                 }
-                // step 3
+                // step3，如果这个产生式的FIRST包含epsilon
                 if (candFIRST.contains(epsilon)) {
                     for (String ch : FOLLOW.get(curr)) {
                         analysisTable.get(curr).put(ch, candidateFormula);

@@ -8,7 +8,8 @@ app = Flask(__name__)
 def hello_world():
     return render_template('main.html', project_set=[], terminal=[], nonterminal=[],
                            analysis_table=[], analysis_stack=[],
-                           grammar_string=[], grammar_name='LR0', collision=False)
+                           grammar_string=[], grammar_name='LR0', input_string="",
+                           collision=False)
 
 
 @app.route('/confirm_grammar', methods=['POST'])
@@ -41,7 +42,8 @@ def confirm_grammar():
     grammar_string = json.dumps(grammar_string.split("\n"))
     return render_template('main.html', project_set=project_set, terminal=terminal, nonterminal=nonterminal,
                            analysis_table=analysis_table, analysis_stack=analysis_stack,
-                           grammar_string=grammar_string, grammar_name=grammar_name, collision=collision)
+                           grammar_string=grammar_string, grammar_name=grammar_name, input_string=input_string,
+                           collision=collision)
 
 
 if __name__ == '__main__':

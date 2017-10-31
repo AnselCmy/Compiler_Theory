@@ -26,7 +26,7 @@
                             <div class="form-group">
                                 <!-- grammar input-->
                                 <textarea class="form-control" name="grammar_string" id="grammar_string" rows="10">
-                                    {a grammar_string a}
+{a grammar_string a}
                                 </textarea>
                                 <!-- grammar name-->
                                 <label>Grammar Type</label>
@@ -51,7 +51,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Input String</label>
-                                <input type="text" class="form-control" name="input_string" placeholder="" value="">
+                                <input type="text" class="form-control" name="input_string" placeholder="" value="{a input_string a}">
                             </div>
                             <!-- submit button-->
                             <button type="submit" class="btn btn-default">Confirm</button>
@@ -135,12 +135,9 @@
         $scope.analysis_stack = {{ analysis_stack | safe }};
         $scope.analysis_stack_head = ["Step", "State", "Characters", "Input String"];
         $scope.grammar_string = {{ grammar_string | safe}};
-{#        var grammar_string_temp = "";#}
-{#        for(var i in $scope.grammar_string) {#}
-{#            grammar_string_temp += $scope.grammar_string[i]+'\n';#}
-{#        }#}
-        $scope.grammar_string = $scope.grammar_string.join("\n");
-        $scope.grammar_name = {{ grammar_name }};
+        $scope.grammar_string = $scope.grammar_string.join("\n").trim();
+        $scope.input_string = "{{ input_string | safe }}";
+        $scope.grammar_name = "{{ grammar_name }}";
         $scope.collision = "{{ collision }}";
         if($scope.collision === "True")
             alert("Collision in Grammar");

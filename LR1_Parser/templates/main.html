@@ -25,19 +25,14 @@
                         <form role="form" action="confirm_grammar" method="post">
                             <div class="form-group">
                                 <!-- grammar input-->
-                                <textarea class="form-control" name="grammar_string" rows="10">
-S->E
-E->E+T
-E->T
-T->T*F
-T->F
-F->(E)
-F->i
+                                <textarea class="form-control" name="grammar_string" id="grammar_string" rows="10">
+                                    {a grammar_string a}
                                 </textarea>
                                 <!-- grammar name-->
+                                <label>Grammar Type</label>
                                 <div class="radio">
                                     <label>
-                                        <input type="radio" name="grammar_name" id="LR0" value="LR0" checked>
+                                        <input type="radio" name="grammar_name" id="LR0" value="LR0">
                                         LR0
                                     </label>
                                 </div>
@@ -54,6 +49,10 @@ F->i
                                     </label>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label>Input String</label>
+                                <input type="text" class="form-control" name="input_string" placeholder="" value="">
+                            </div>
                             <!-- submit button-->
                             <button type="submit" class="btn btn-default">Confirm</button>
                         </form>
@@ -61,7 +60,26 @@ F->i
                 </div>
             </div><!-- ./panel -->
             </div>
+            <div class="col-md-offset-1 col-md-5">
+            <div class="panel panel-default">
+                <!-- panel head -->
+                <div class="panel-heading">
+                    <h3 class="panel-title">Analysis Stack</h3>
+                </div>
+                <!-- panel body-->
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <th ng-repeat="h in analysis_stack_head">{a h a}</th>
+                        <tr ng-repeat="set in analysis_stack">
+                            <td ng-bind="$index"></td>
+                            <td ng-repeat="s in set">{a s a}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            </div>
         </div><!-- ./row -->
+
         <div class="row">
             <div class="col-md-offset-1 col-md-5">
             <div class="panel panel-default">
@@ -80,7 +98,6 @@ F->i
                 </div>
             </div>
             </div><!-- ./project set -->
-
             <div class="col-md-offset-1 col-md-5">
             <div class="panel panel-default">
                 <!-- panel head -->
@@ -90,9 +107,9 @@ F->i
                 <!-- panel body-->
                 <div class="panel-body">
                     <table class="table table-bordered">
-                        <!--<th ng-repeat="h in analysis_table_head">{a h a}</th>-->
+                        <th ng-repeat="h in analysis_table_head">{a h a}</th>
                         <tr ng-repeat="row in analysis_table">
-                            <th ng-repeat="h in table_head">{a h a}</th>
+                            <td ng-bind="$index"></td>
                             <td ng-repeat="r in row track by $index">{a r a}</td>
                         </tr>
                     </table>
@@ -114,7 +131,25 @@ F->i
         $scope.terminal = {{ terminal | safe }};
         $scope.nonterminal = {{ nonterminal | safe }};
         $scope.analysis_table = {{ analysis_table | safe }};
-        $scope.analysis_table_head = $scope.terminal.concat(['#'], $scope.nonterminal)
+        $scope.analysis_table_head = ["State"].concat($scope.terminal, ['#'], $scope.nonterminal);
+        $scope.analysis_stack = {{ analysis_stack | safe }};
+        $scope.analysis_stack_head = ["Step", "State", "Characters", "Input String"];
+        $scope.grammar_string = {{ grammar_string | safe}};
+{#        var grammar_string_temp = "";#}
+{#        for(var i in $scope.grammar_string) {#}
+{#            grammar_string_temp += $scope.grammar_string[i]+'\n';#}
+{#        }#}
+        $scope.grammar_string = $scope.grammar_string.join("\n");
+        $scope.grammar_name = {{ grammar_name }};
+        $scope.collision = "{{ collision }}";
+        if($scope.collision === "True")
+            alert("Collision in Grammar");
+        if($scope.grammar_name === 'LR0')
+            $("input[name='grammar_name'][value='LR0']").attr("checked", true);
+        else if($scope.grammar_name === 'SLR')
+            $("input[name='grammar_name'][value='SLR']").attr("checked", true);
+        else if($scope.grammar_name === 'LR1')
+            $("input[name='grammar_name'][value='LR1']").attr("checked", true);
     });
 </script>
 

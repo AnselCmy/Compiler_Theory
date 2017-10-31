@@ -75,6 +75,7 @@ class LR0Grammar:
         self.project_set = []
         self.ACTION = defaultdict(lambda: defaultdict(lambda: None))
         self.GOTO = defaultdict(lambda: defaultdict(lambda: None))
+        self.if_meet_collison = False
         self.stack_table = []
         # method
         self.parse(grammar_string)
@@ -235,7 +236,8 @@ class LR0Grammar:
                         if self.ACTION[Ik][a] is None:
                             self.ACTION[Ik][a] = "s"+str(Ij)
                         else:
-                            raise ValueError("Meet Collision")
+                            self.if_meet_collison = True
+                            # raise ValueError("Meet Collision")
                 # (2)
                 if produce_string.index(".") == len(produce_string)-1 \
                         and Produce(produce_string).replace_point() != self.start_produce:
@@ -244,13 +246,15 @@ class LR0Grammar:
                         if self.ACTION[Ik][character] is None:
                             self.ACTION[Ik][character] = "r"+str(Ij)
                         else:
-                            raise ValueError("Meet Collision")
+                            self.if_meet_collison = True
+                            # raise ValueError("Meet Collision")
                 # (3)
                 if produce_string == self.start_produce + ".":
                     if self.ACTION[Ik]["#"] is None:
                         self.ACTION[Ik]["#"] = "acc"
                     else:
-                        raise ValueError("Meet Collision")
+                        self.if_meet_collison = True
+                        # raise ValueError("Meet Collision")
         # GOTO
         for Ik, val in self.GO.items():
             for A, Ij in val.items():
@@ -258,6 +262,8 @@ class LR0Grammar:
                     self.GOTO[Ik][A] = Ij
 
     def run(self, input_string):
+        if input_string == "":
+            return
         state = [0]
         characters = "#"
         input_string = input_string + "#"

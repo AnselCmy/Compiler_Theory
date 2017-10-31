@@ -59,7 +59,7 @@ class Controller(object):
         # print("controller: ", analysis_table)
         return analysis_table
 
-    def get_stack_table(self, grammar_string, input_string, grammar_name):
+    def get_stack_table(self, grammar_string, grammar_name, input_string):
         if grammar_name == 'LR0':
             grammar = LR0Grammar(grammar_string)
         elif grammar_name == 'SLR':
@@ -69,7 +69,24 @@ class Controller(object):
         grammar.gen_project_set()
         grammar.gen_analysis_table()
         grammar.run(input_string)
-        return grammar.stack_table
+        stack_table = grammar.stack_table
+        for entry in stack_table:
+            temp_str = ""
+            for num in entry[0]:
+                temp_str += str(num) + ' '
+            entry[0] = temp_str.strip()
+        return stack_table
+
+    def if_collision(self, grammar_string, grammar_name):
+        if grammar_name == 'LR0':
+            grammar = LR0Grammar(grammar_string)
+        elif grammar_name == 'SLR':
+            grammar = SLRGrammar(grammar_string)
+        elif grammar_name == 'LR1':
+            grammar = LR1Grammar(grammar_string)
+        grammar.gen_project_set()
+        grammar.gen_analysis_table()
+        return str(grammar.if_meet_collison)
 
 
 if __name__ == "__main__":
@@ -78,4 +95,4 @@ if __name__ == "__main__":
     #     print(num, project_set)
     # for key, val in controller.get_analysis_table(test_input_string1, 'LR0')[0].items():
     #     print(key, val)
-    controller.get_analysis_table(test_input_string1, 'SLR')
+    print(controller.get_stack_table(test_input_string1, 'SLR', "i*i+i"))

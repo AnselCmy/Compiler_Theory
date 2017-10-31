@@ -6,16 +6,8 @@ class SLRGrammar(LR0Grammar):
         super(SLRGrammar, self).__init__(grammar_string)
         self.FIRST = defaultdict(list)
         self.FOLLOW = defaultdict(list)
-        # self.gen_FIRST()
-        # # generate the FOLLOW set
-        # self.parse(test_input_string2)
-        # self.FIRST = defaultdict(list)
-        # self.FOLLOW = defaultdict(list)
-        # self.gen_FIRST()
-        # self.gen_FOLLOW()
-        # # generate analysis table
-        # self.parse(test_input_string1)
-        # self.gen_project()
+        self.gen_FIRST()
+        self.gen_FOLLOW()
         # self.gen_project_set()
         # self.gen_analysis_table()
 
@@ -166,8 +158,8 @@ class SLRGrammar(LR0Grammar):
                     self.GOTO[Ik][A] = Ij
 
 
-if __name__ == "__main__":
-    grammar = SLRGrammar(test_input_string1)
+# if __name__ == "__main__":
+    # grammar = SLRGrammar(test_input_string1)
     # for num, project_set in enumerate(grammar.project_set):
     #     print("{}: {}".format(num, project_set))
     # print(grammar.FOLLOW)
@@ -176,9 +168,9 @@ if __name__ == "__main__":
     #     print("{}: {}".format(key, val))
     # grammar.run("i*i+i")
     # grammar.gen_FIRST()
-    grammar.gen_FIRST()
-    print(grammar.FIRST)
-    grammar.gen_FOLLOW()
-    print(grammar.FOLLOW)
-    grammar.gen_analysis_table()
-    grammar.run("i*i+i")
+    # grammar.gen_FIRST()
+    # print(grammar.FIRST)
+    # grammar.gen_FOLLOW()
+    # print(grammar.FOLLOW)
+    # grammar.gen_analysis_table()
+    # grammar.run("i*i+i")

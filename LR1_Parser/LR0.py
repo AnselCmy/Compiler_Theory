@@ -1,9 +1,5 @@
 from collections import defaultdict
 
-test_input_string = "S->E\nE->aA|bB\nA->cA|d\nB->cB|d"
-test_input_string1 = "S->E\nE->E+T\nE->T\nT->T*F\nT->F\nF->(E)\nF->i"
-test_input_string2 = "E->TA\nA->+TA|$\nT->FB\nB->*FB|$\nF->(E)|i"
-
 epsilon = '$'
 
 
@@ -27,7 +23,8 @@ class Produce:
         for produce in input_list:
             produce = produce.split("->")
             self.left = produce[0]
-            self.right = produce[1].split("|")
+            # self.right = produce[1].split("|")
+            self.right = produce[1].split(",")[0].split("|")
             produce = [self.left, self.right]
             self.produce_list.append(produce)
 
@@ -78,6 +75,7 @@ class LR0Grammar:
         self.project_set = []
         self.ACTION = defaultdict(lambda: defaultdict(lambda: None))
         self.GOTO = defaultdict(lambda: defaultdict(lambda: None))
+        self.stack_table = []
         # method
         self.parse(grammar_string)
         self.gen_project()
@@ -260,11 +258,10 @@ class LR0Grammar:
                     self.GOTO[Ik][A] = Ij
 
     def run(self, input_string):
-        stack_table = []
         state = [0]
         characters = "#"
         input_string = input_string + "#"
-        stack_table.append([state[:], characters, input_string])
+        self.stack_table.append([state[:], characters, input_string])
         while True:
             action_string = self.ACTION[state[-1]][input_string[0]]
             # shift
@@ -283,8 +280,8 @@ class LR0Grammar:
             # acc
             elif action_string == "acc":
                 break
-            stack_table.append([state[:], characters, input_string])
-            print([state, characters, input_string], action_string)
+            self.stack_table.append([state[:], characters, input_string])
+            # print([state, characters, input_string], action_string)
 
     def is_nonterminal(self, letter):
         return str.isupper(letter)
@@ -313,10 +310,10 @@ class LR0Parser:
         print(self.grammar.GOTO)
 
 
-if __name__ == "__main__":
-    grammar = LR0Grammar(test_input_string)
-    grammar.gen_analysis_table()
-    grammar.run("acccd")
+# if __name__ == "__main__":
+#     grammar = LR0Grammar(test_input_string)
+#     grammar.gen_analysis_table()
+#     grammar.run("acccd")
     # print("CLOSURE")
     # for key, val in grammar.CLOSURE.items():
     #     print("{}: {}".format(key, val))

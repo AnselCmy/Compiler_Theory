@@ -11,12 +11,96 @@
 
 <body>
 	<div ng-app="lr_app" ng-controller="lr_controller">
-		{a test a}
-		{a test_type a}
-		<div ng-repeat="index in test">
-			<p>{a index a}</p>
-		</div>
-	<div>
+        <br>
+        <div class="row">
+            <div class="col-md-offset-1 col-md-5">
+            <div class="panel panel-default">
+                <!-- panel head -->
+                <div class="panel-heading">
+                    <h3 class="panel-title">Grammar</h3>
+                </div>
+                <!-- panel body-->
+                <div class="panel-body">
+                    <div class="col-md-12">
+                        <form role="form" action="confirm_grammar" method="post">
+                            <div class="form-group">
+                                <!-- grammar input-->
+                                <textarea class="form-control" name="grammar_string" rows="10">
+S->E
+E->E+T
+E->T
+T->T*F
+T->F
+F->(E)
+F->i
+                                </textarea>
+                                <!-- grammar name-->
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="grammar_name" id="LR0" value="LR0" checked>
+                                        LR0
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="grammar_name" id="SLR" value="SLR">
+                                        SLR
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="grammar_name" id="LR1" value="LR1">
+                                        LR1
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- submit button-->
+                            <button type="submit" class="btn btn-default">Confirm</button>
+                        </form>
+                    </div>
+                </div>
+            </div><!-- ./panel -->
+            </div>
+        </div><!-- ./row -->
+        <div class="row">
+            <div class="col-md-offset-1 col-md-5">
+            <div class="panel panel-default">
+                <!-- panel head -->
+                <div class="panel-heading">
+                    <h3 class="panel-title">Project Set</h3>
+                </div>
+                <!-- panel body-->
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <tr ng-repeat="set in project_set">
+                            <td ng-bind="$index"></td>
+                            <td ng-repeat="s in set">{a s a}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            </div><!-- ./project set -->
+
+            <div class="col-md-offset-1 col-md-5">
+            <div class="panel panel-default">
+                <!-- panel head -->
+                <div class="panel-heading">
+                    <h3 class="panel-title">Analysis Table</h3>
+                </div>
+                <!-- panel body-->
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <!--<th ng-repeat="h in analysis_table_head">{a h a}</th>-->
+                        <tr ng-repeat="row in analysis_table">
+                            <th ng-repeat="h in table_head">{a h a}</th>
+                            <td ng-repeat="r in row track by $index">{a r a}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            </div><!-- ./analysis table -->
+        </div><!-- ./row -->
+	</div><!-- ./lr-app -->
 </body>
 
 <script>
@@ -26,8 +110,11 @@
 		$interpolateProvider.endSymbol('a}');
 	}]);
     app.controller("lr_controller", function($scope){
-        $scope.test = {{ test }};
-        $scope.test_type = typeof $scope.test
+        $scope.project_set = {{ project_set | safe }};
+        $scope.terminal = {{ terminal | safe }};
+        $scope.nonterminal = {{ nonterminal | safe }};
+        $scope.analysis_table = {{ analysis_table | safe }};
+        $scope.analysis_table_head = $scope.terminal.concat(['#'], $scope.nonterminal)
     });
 </script>
 
